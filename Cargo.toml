@@ -1,0 +1,8 @@
+[package]
+name = "daybits4r"
+version = "0.1.0"
+authors = ["maomao.gmm <maomao.gmm@alibaba-inc.com>"]
+
+[dependencies]
+chrono = { version = "0.4", features = ["serde", "rustc-serialize"] }
+lazy_static = "0.2"
