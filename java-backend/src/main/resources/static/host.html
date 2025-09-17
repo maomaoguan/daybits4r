@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Host Embedding Page</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #f8fafc; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+    .frame { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; background: white; }
+    header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+    select { padding: 6px; }
+    iframe { width: 100%; border: 0; }
+  </style>
+  <script>
+    const config = { theme: 'light', apiBase: '' };
+
+    function sendConfig(frame, id) {
+      frame.contentWindow.postMessage({ type: 'host:config', ...config }, '*');
+    }
+
+    function resizeFrame(id, height) {
+      const iframe = document.getElementById(id);
+      if (iframe) iframe.style.height = Math.max(200, height) + 'px';
+    }
+
+    window.addEventListener('message', (evt) => {
+      const msg = evt.data || {};
+      if (msg.type === 'console:ready') {
+        const frame = document.getElementById(msg.id);
+        if (frame) sendConfig(frame, msg.id);
+      }
+      if (msg.type === 'console:height') {
+        resizeFrame(msg.id, msg.height);
+      }
+    });
+
+    function onThemeChange(sel) {
+      config.theme = sel.value;
+      // resend to all
+      Array.from(document.querySelectorAll('iframe')).forEach(f => sendConfig(f));
+    }
+
+    window.addEventListener('load', () => {
+      const base = window.location.origin;
+      config.apiBase = base;
+    });
+  </script>
+</head>
+<body>
+  <header>
+    <h1>Embedding Demo</h1>
+    <label>Theme: 
+      <select onchange="onThemeChange(this)">
+        <option value="light" selected>Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </label>
+  </header>
+
+  <div class="grid">
+    <div class="frame">
+      <iframe id="console1" src="./console1.html" height="300" title="Console One"></iframe>
+    </div>
+    <div class="frame">
+      <iframe id="console2" src="./console2.html" height="300" title="Console Two"></iframe>
+    </div>
+  </div>
+</body>
+</html>
+

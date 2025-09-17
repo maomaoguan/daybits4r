@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Console One</title>
+  <style>
+    :root { --bg: #ffffff; --fg: #111111; --accent: #2e7d32; }
+    [data-theme="dark"] { --bg: #0f172a; --fg: #e2e8f0; --accent: #22c55e; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+    .wrap { padding: 16px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; background: rgba(0,0,0,0.02); }
+    button { background: var(--accent); color: white; border: none; border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+    input { padding: 8px; margin-right: 8px; }
+    .muted { opacity: .7; font-size: 12px; }
+  </style>
+  <script>
+    const state = { apiBase: '', theme: 'light' };
+
+    function postHeight() {
+      const h = document.body.scrollHeight;
+      parent.postMessage({ type: 'console:height', id: 'console1', height: h }, '*');
+    }
+
+    async function ping() {
+      const res = await fetch(state.apiBase + '/api/ping');
+      const data = await res.json();
+      document.getElementById('pingResult').textContent = JSON.stringify(data);
+      postHeight();
+    }
+
+    async function sum() {
+      const a = parseFloat(document.getElementById('a').value || '0');
+      const b = parseFloat(document.getElementById('b').value || '0');
+      const res = await fetch(state.apiBase + '/api/sum', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ a, b }) });
+      const data = await res.json();
+      document.getElementById('sumResult').textContent = JSON.stringify(data);
+      postHeight();
+    }
+
+    window.addEventListener('message', (evt) => {
+      const msg = evt.data || {};
+      if (msg.type === 'host:config') {
+        state.apiBase = msg.apiBase || '';
+        state.theme = msg.theme || 'light';
+        document.documentElement.setAttribute('data-theme', state.theme);
+        postHeight();
+      }
+    });
+
+    window.addEventListener('load', () => {
+      parent.postMessage({ type: 'console:ready', id: 'console1' }, '*');
+      postHeight();
+    });
+  </script>
+  </head>
+  <body>
+    <div class="wrap">
+      <h2>Console One</h2>
+      <div class="card">
+        <div class="muted">Calls /api/ping and /api/sum</div>
+        <p><button onclick="ping()">Ping</button> <span id="pingResult"></span></p>
+        <p>
+          <input id="a" type="number" placeholder="a" />
+          <input id="b" type="number" placeholder="b" />
+          <button onclick="sum()">Sum</button>
+        </p>
+        <pre id="sumResult"></pre>
+      </div>
+    </div>
+  </body>
+</html>
+
