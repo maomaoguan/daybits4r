@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Console App - Users</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 0; background: #0f172a; color: #e2e8f0; }
+      header { padding: 16px 24px; border-bottom: 1px solid #334155; display: flex; align-items: center; justify-content: space-between; }
+      nav a { color: #93c5fd; text-decoration: none; margin-right: 16px; }
+      nav a:hover { text-decoration: underline; }
+      main { padding: 24px; }
+      .search { display: flex; gap: 8px; margin-bottom: 16px; }
+      input[type="text"] { background: #111827; border: 1px solid #374151; border-radius: 8px; padding: 10px 12px; color: #e2e8f0; width: 320px; }
+      button { background: #2563eb; border: none; color: white; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
+      button:disabled { background: #475569; cursor: not-allowed; }
+      table { width: 100%; border-collapse: collapse; background: #111827; border-radius: 10px; overflow: hidden; }
+      th, td { padding: 12px 14px; border-bottom: 1px solid #1f2937; text-align: left; }
+      th { background: #0b1220; color: #9aa7bd; font-weight: 600; }
+      tr:hover td { background: #0b1220; }
+      .muted { color: #94a3b8; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div>User Search</div>
+      <nav>
+        <a href="/index.html">Home</a>
+        <a href="/dashboard.html">Dashboard</a>
+      </nav>
+    </header>
+    <main>
+      <div class="search">
+        <input id="query" type="text" placeholder="Search by name, email, or role">
+        <button id="btnSearch">Search</button>
+      </div>
+      <div id="resultsWrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody id="results"></tbody>
+        </table>
+        <div id="empty" class="muted" style="display:none; padding:12px;">No results</div>
+      </div>
+    </main>
+
+    <script>
+      function renderUsers(users) {
+        const body = $('#results');
+        body.empty();
+        if (!users || users.length === 0) {
+          $('#empty').show();
+          return;
+        }
+        $('#empty').hide();
+        users.forEach(function(u) {
+          const row = $('<tr>');
+          row.append($('<td>').text(u.id));
+          row.append($('<td>').text(u.name));
+          row.append($('<td>').text(u.email));
+          row.append($('<td>').text(u.role));
+          body.append(row);
+        });
+      }
+
+      function loadUsers(query) {
+        const params = query ? ('?query=' + encodeURIComponent(query)) : '';
+        $('#btnSearch').prop('disabled', true);
+        $.getJSON('/api/users' + params, function(data) {
+          renderUsers(data);
+        }).fail(function(xhr) {
+          console.error('Failed to load users', xhr.responseText);
+        }).always(function() {
+          $('#btnSearch').prop('disabled', false);
+        });
+      }
+
+      $(function() {
+        loadUsers('');
+        $('#btnSearch').on('click', function() { loadUsers($('#query').val()); });
+        $('#query').on('keypress', function(e) { if (e.which === 13) { loadUsers($('#query').val()); } });
+      });
+    </script>
+  </body>
+  </html>
+
