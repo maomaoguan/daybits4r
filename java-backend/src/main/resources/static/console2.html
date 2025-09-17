@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Console Two</title>
+  <style>
+    :root { --bg: #ffffff; --fg: #111111; --accent: #1d4ed8; }
+    [data-theme="dark"] { --bg: #0b1020; --fg: #e2e8f0; --accent: #60a5fa; }
+    body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--fg); }
+    .wrap { padding: 16px; }
+    .card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; background: rgba(0,0,0,0.02); }
+    button { background: var(--accent); color: white; border: none; border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+    input, textarea { width: 100%; padding: 8px; }
+  </style>
+  <script>
+    const state = { apiBase: '', theme: 'light' };
+
+    function postHeight() {
+      const h = document.body.scrollHeight;
+      parent.postMessage({ type: 'console:height', id: 'console2', height: h }, '*');
+    }
+
+    async function echo() {
+      const payload = { message: document.getElementById('msg').value };
+      const res = await fetch(state.apiBase + '/api/echo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const data = await res.json();
+      document.getElementById('echoResult').textContent = JSON.stringify(data, null, 2);
+      postHeight();
+    }
+
+    window.addEventListener('message', (evt) => {
+      const msg = evt.data || {};
+      if (msg.type === 'host:config') {
+        state.apiBase = msg.apiBase || '';
+        state.theme = msg.theme || 'light';
+        document.documentElement.setAttribute('data-theme', state.theme);
+        postHeight();
+      }
+    });
+
+    window.addEventListener('load', () => {
+      parent.postMessage({ type: 'console:ready', id: 'console2' }, '*');
+      postHeight();
+    });
+  </script>
+</head>
+<body>
+  <div class="wrap">
+    <h2>Console Two</h2>
+    <div class="card">
+      <textarea id="msg" rows="3" placeholder="Type a message to echo..."></textarea>
+      <p><button onclick="echo()">Echo</button></p>
+      <pre id="echoResult"></pre>
+    </div>
+  </div>
+</body>
+</html>
+
