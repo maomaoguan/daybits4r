@@ -2,7 +2,13 @@
 name = "daybits4r"
 version = "0.1.0"
 authors = ["maomao.gmm <maomao.gmm@alibaba-inc.com>"]
+edition = "2021"
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde", "rustc-serialize"] }
 lazy_static = "0.2"
+axum = { version = "0.6", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+tower-http = { version = "0.4", features = ["cors", "fs", "trace", "set-header"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

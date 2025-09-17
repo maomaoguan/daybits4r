@@ -76,14 +76,13 @@ pub static ref CALENDAR_CACHE : CalendarCache = {
 	let mut secondsCache: [i64; BOUND] = [0; BOUND];
 	
     let timeBase = Utc.ymd(2010, 1, 1).and_hms(0, 0, 0);
-    let timeBaseSecs = timeBase.timestamp() / 1000;
+    let timeBaseSecs = timeBase.timestamp();
 
     let mut i = 0;
     while i < 366 * 10 {
-        let millis: i64 = timeBaseSecs * 1000 + i * 24 * 3600;
-        let seconds: i64 = millis;
+        let seconds: i64 = timeBaseSecs + i * 24 * 3600;
 
-        let dateTime = NaiveDateTime::from_timestamp(millis, 0);
+        let dateTime = NaiveDateTime::from_timestamp(seconds, 0);
 
         let year = dateTime.year();
         let month = dateTime.month();
@@ -99,7 +98,7 @@ pub static ref CALENDAR_CACHE : CalendarCache = {
             secondsCache[valueIndex as usize] = seconds;
         }
 
-        let quarterFirstDaySeconds = secods(&secondsCache, year as i16, firstMonthOfQuarter(month as i8), 1 as i8);
+        let quarterFirstDaySeconds = seconds_of(&secondsCache, year as i16, firstMonthOfQuarter(month as i8), 1 as i8);
         let dayOfQuarter = (seconds - quarterFirstDaySeconds) / (3600 * 24);
         let quarterIndex = quarterIndex(month as i8);
         let dayCacheIndex = (year - 2010) * 31 * 12 + quarterIndex as i32 * 31 * 3 + dayOfQuarter as i32;
@@ -1091,7 +1090,7 @@ impl DayBits {
     }
 }
 
-fn secods(secondsCache: &[i64; BOUND], year: i16, month: i8, dayOfMonth: i8) -> i64 {
+fn seconds_of(secondsCache: &[i64; BOUND], year: i16, month: i8, dayOfMonth: i8) -> i64 {
     if year >= 2010 && year < 2020 {
         let valueIndex: i32 = (year as i32 - 2010) * (12 * 31) + (month as i32 - 1) * 31 + (dayOfMonth as i32 - 1);
 
@@ -1102,7 +1101,7 @@ fn secods(secondsCache: &[i64; BOUND], year: i16, month: i8, dayOfMonth: i8) -> 
 
     let calendar = Utc.ymd(year as i32, (month) as u32, dayOfMonth as u32).and_hms(0, 0, 0);
 
-    return calendar.timestamp() / 1000;
+    return calendar.timestamp();
 }
 
 fn firstMonthOfQuarter(month: i8) -> i8 {
