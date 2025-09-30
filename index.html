@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search Header</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/workspace/styles.css" />
+</head>
+<body>
+  <header class="search-header" role="search">
+    <div class="search-bar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">🔎</span>
+        <span class="brand-name">Finder</span>
+      </div>
+
+      <label class="search-input" aria-label="Search">
+        <input id="q" type="text" placeholder="Search..." autocomplete="off" />
+        <button class="icon-btn clear-input" aria-label="Clear search" data-ripple>
+          <span class="icon">✕</span>
+        </button>
+      </label>
+
+      <div class="actions">
+        <button id="btn-filters" class="btn surface" aria-expanded="false" aria-controls="filters-panel" data-ripple>
+          Filters
+          <span class="chev" aria-hidden="true">▾</span>
+        </button>
+        <button id="btn-search" class="btn primary" data-ripple>
+          Search
+        </button>
+      </div>
+    </div>
+
+    <div id="filters-panel" class="filters-panel" hidden>
+      <div class="filter-row">
+        <div class="filter-group">
+          <div class="label">Type</div>
+          <div class="chipset" role="group" aria-label="Type filters">
+            <button class="chip" data-filter="type" data-value="docs" data-ripple>Docs</button>
+            <button class="chip" data-filter="type" data-value="images" data-ripple>Images</button>
+            <button class="chip" data-filter="type" data-value="videos" data-ripple>Videos</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <div class="label">Date</div>
+          <div class="chipset" role="group" aria-label="Date filters">
+            <button class="chip" data-filter="date" data-value="24h" data-ripple>Last 24h</button>
+            <button class="chip" data-filter="date" data-value="7d" data-ripple>7 days</button>
+            <button class="chip" data-filter="date" data-value="30d" data-ripple>30 days</button>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <div class="label">Sort</div>
+          <select id="sort" class="select">
+            <option value="relevance">Relevance</option>
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="active-filters" aria-live="polite" aria-atomic="true">
+        <!-- Active filter chips rendered here -->
+      </div>
+
+      <div class="footer-actions">
+        <button id="btn-clear" class="btn ghost" data-ripple>Clear filters</button>
+        <button id="btn-apply" class="btn primary" data-ripple>Apply</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="results">
+    <pre id="state" class="state"></pre>
+  </main>
+
+  <script src="/workspace/app.js"></script>
+  
+</body>
+</html>
+
