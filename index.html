@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Date Range Picker (jQuery)</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a32;
+      --text: #e7ecff;
+      --muted: #a9b1d6;
+      --primary: #5b8cff;
+      --primary-700: #4a76d4;
+      --border: #233055;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, Noto Sans, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 10% -20%, #17203f 0%, transparent 45%),
+                  radial-gradient(1200px 800px at 110% 0%, #111a36 0%, transparent 50%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(6px);
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: 18px;
+      margin: 0;
+      letter-spacing: 0.2px;
+      color: var(--text);
+    }
+    .muted { color: var(--muted); font-size: 13px; }
+
+    .field {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .input {
+      width: 100%;
+      height: 42px;
+      background: #121a34;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .input::placeholder { color: #7f8ab3; }
+    .input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(91, 140, 255, 0.25);
+    }
+    .btn {
+      height: 42px;
+      padding: 0 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #151e3b;
+      color: var(--text);
+      cursor: pointer;
+      transition: transform .08s ease, background .15s ease, border-color .15s ease;
+    }
+    .btn:hover { background: #19244a; }
+    .btn:active { transform: translateY(1px); }
+
+    .summary {
+      margin-top: 14px;
+      padding: 12px;
+      background: #0f1731;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.35;
+    }
+    .summary strong { color: var(--text); }
+
+    /* Daterangepicker theme tweaks (dark) */
+    .daterangepicker {
+      color: #e7ecff;
+      background: #0f1731;
+      border: 1px solid #22315a;
+    }
+    .daterangepicker .calendar-table {
+      background: #0f1731;
+      border-color: #22315a;
+    }
+    .daterangepicker .drp-buttons {
+      border-color: #22315a;
+      background: #0f1731;
+    }
+    .daterangepicker td.available:hover, .daterangepicker th.available:hover {
+      background: #1a2550;
+    }
+    .daterangepicker td.in-range {
+      background: rgba(91, 140, 255, 0.18);
+    }
+    .daterangepicker td.active, .daterangepicker td.active:hover {
+      background: var(--primary);
+    }
+    .daterangepicker .ranges li:hover { background: #1a2550; }
+    .daterangepicker .ranges li.active { background: var(--primary-700); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="header">
+      <h1>Date range</h1>
+      <div class="muted">Max 30 days. Not older than 3 months.</div>
+    </div>
+
+    <label for="dateRange" class="muted">Choose range</label>
+    <div class="field">
+      <input id="dateRange" class="input" type="text" placeholder="Select a date range" readonly />
+      <button id="clear" class="btn" type="button">Clear</button>
+    </div>
+
+    <div id="summary" class="summary">Selected: <strong id="selected-range">None</strong></div>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/min/moment.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+
+  <script>
+    (function () {
+      var DATE_FORMAT = 'YYYY-MM-DD';
+
+      // Assumption: disallow future dates; cap range at today.
+      var minDate = moment().subtract(3, 'months').startOf('day');
+      var maxDate = moment().endOf('day');
+
+      var $input = $('#dateRange');
+      var $label = $('#selected-range');
+
+      function updateLabel(start, end) {
+        var text = start.format(DATE_FORMAT) + ' to ' + end.format(DATE_FORMAT);
+        $label.text(text);
+      }
+
+      $input.daterangepicker({
+        autoUpdateInput: false,
+        minDate: minDate,
+        maxDate: maxDate,
+        maxSpan: { days: 30 },
+        startDate: moment().subtract(6, 'days').startOf('day'), // default Last 7 Days
+        endDate: moment().endOf('day'),
+        opens: 'left',
+        alwaysShowCalendars: true,
+        showDropdowns: true,
+        locale: {
+          format: DATE_FORMAT,
+          cancelLabel: 'Clear'
+        },
+        ranges: {
+          'Today': [moment().startOf('day'), moment().endOf('day')],
+          'Yesterday': [moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')],
+          'Last 7 Days': [moment().subtract(6, 'days').startOf('day'), moment().endOf('day')],
+          'Last 30 Days': [moment().subtract(29, 'days').startOf('day'), moment().endOf('day')]
+        }
+      });
+
+      $input.on('apply.daterangepicker', function (ev, picker) {
+        var start = picker.startDate.clone();
+        var end = picker.endDate.clone();
+        // Enforce again at apply-time as a safeguard
+        if (end.diff(start, 'days') > 30) {
+          end = start.clone().add(30, 'days').endOf('day');
+        }
+        if (start.isBefore(minDate)) start = minDate.clone();
+        if (end.isAfter(maxDate)) end = maxDate.clone();
+        $(this).val(start.format(DATE_FORMAT) + ' - ' + end.format(DATE_FORMAT));
+        updateLabel(start, end);
+      });
+
+      $input.on('cancel.daterangepicker', function () {
+        $(this).val('');
+        $label.text('None');
+      });
+
+      $('#clear').on('click', function () {
+        $input.val('');
+        $label.text('None');
+      });
+
+      // Initialize display with default (Last 7 Days)
+      var picker = $input.data('daterangepicker');
+      if (picker) {
+        var s = picker.startDate.clone();
+        var e = picker.endDate.clone();
+        $input.val(s.format(DATE_FORMAT) + ' - ' + e.format(DATE_FORMAT));
+        updateLabel(s, e);
+      }
+    })();
+  </script>
+</body>
+</html>
